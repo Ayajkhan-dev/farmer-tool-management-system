@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Tool Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <button id="menuBtn" class="menu-btn" onclick="toggleMenu()">☰</button>
+            <h1 class="app-title">Farmer Tool Manager</h1>
+            <div class="header-spacer"></div>
+        </header>
+
+        <!-- Side Menu -->
+        <nav id="sideMenu" class="side-menu">
+            <div class="menu-header">
+                <h2>Menu</h2>
+                <button class="close-menu" onclick="toggleMenu()">×</button>
+            </div>
+            <ul class="menu-list">
+                <li><a href="#" onclick="navigateTo('dashboard'); return false;">Dashboard</a></li>
+                <li><a href="#" onclick="navigateTo('rates'); return false;">Set Rates</a></li>
+                <li><a href="#" onclick="navigateTo('history'); return false;">History</a></li>
+                <li><a href="#" onclick="navigateTo('udhaar'); return false;">Udhaar (Khata)</a></li>
+            </ul>
+        </nav>
+
+        <!-- Menu Overlay -->
+        <div id="menuOverlay" class="menu-overlay" onclick="toggleMenu()"></div>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- DASHBOARD PAGE -->
+            <section id="dashboard" class="page active">
+                <h2 class="page-title">Select Tool</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="openStartScreen('Cultivator')">
+                        <div class="tool-image-container">
+                            <img src="images/cultivator.png" alt="Cultivator" class="tool-image">
+                        </div>
+                        <div class="tool-name">Cultivator</div>
+                    </div>
+                    <div class="tool-card" onclick="openStartScreen('Rotavator')">
+                        <div class="tool-image-container">
+                            <img src="images/rotavator.png" alt="Rotavator" class="tool-image">
+                        </div>
+                        <div class="tool-name">Rotavator</div>
+                    </div>
+                    <div class="tool-card" onclick="openStartScreen('Leveler')">
+                        <div class="tool-image-container">
+                            <img src="images/leveler.png" alt="Leveler" class="tool-image">
+                        </div>
+                        <div class="tool-name">Leveler</div>
+                    </div>
+                    <div class="tool-card" onclick="openStartScreen('Trolley')">
+                        <div class="tool-image-container">
+                            <img src="images/trolley.png" alt="Trolley" class="tool-image">
+                        </div>
+                        <div class="tool-name">Trolley</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- START SCREEN PAGE -->
+            <section id="startScreen" class="page">
+                <div class="start-container">
+                    <h2 class="page-title" id="startToolName">Tool Name</h2>
+                    <div class="rate-display">
+                        <span class="rate-label">Rate per hour:</span>
+                        <span class="rate-value" id="startRateValue">₹0</span>
+                    </div>
+                    <div class="rate-warning" id="rateWarning" style="display: none;">
+                        Please set the rate for this tool first!
+                    </div>
+                    <button id="startBtn" class="btn btn-start" onclick="startTool()">START</button>
+                    <button class="btn btn-secondary" onclick="navigateTo('dashboard')">Back</button>
+                </div>
+            </section>
+
+            <!-- RUNNING SCREEN PAGE -->
+            <section id="runningScreen" class="page">
+                <div class="running-container">
+                    <h2 class="page-title" id="runningToolName">Tool Name</h2>
+                    <div class="timer-display" id="timerDisplay">00:00:00</div>
+                    <div class="running-status">Running...</div>
+                    <button class="btn btn-stop" onclick="stopTool()">STOP</button>
+                </div>
+            </section>
+
+            <!-- RESULT SCREEN PAGE -->
+            <section id="resultScreen" class="page">
+                <div class="result-container">
+                    <h2 class="page-title">Work Completed</h2>
+                    <div class="result-card">
+                        <div class="result-item">
+                            <span class="result-label">Tool:</span>
+                            <span class="result-value" id="resultToolName">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Total Time:</span>
+                            <span class="result-value" id="resultTime">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Total Cost:</span>
+                            <span class="result-value" id="resultCost">-</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="backToDashboard()">Back to Dashboard</button>
+                </div>
+            </section>
+
+            <!-- SET RATES PAGE -->
+            <section id="rates" class="page">
+                <h2 class="page-title">Set Hourly Rates</h2>
+                <div class="rates-form">
+                    <div class="rate-input-group">
+                        <label for="rateCultivator">Cultivator (₹/hour)</label>
+                        <input type="number" id="rateCultivator" placeholder="Enter rate" min="0">
+                    </div>
+                    <div class="rate-input-group">
+                        <label for="rateRotavator">Rotavator (₹/hour)</label>
+                        <input type="number" id="rateRotavator" placeholder="Enter rate" min="0">
+                    </div>
+                    <div class="rate-input-group">
+                        <label for="rateLeveler">Leveler (₹/hour)</label>
+                        <input type="number" id="rateLeveler" placeholder="Enter rate" min="0">
+                    </div>
+                    <div class="rate-input-group">
+                        <label for="rateTrolley">Trolley (₹/hour)</label>
+                        <input type="number" id="rateTrolley" placeholder="Enter rate" min="0">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveRates()">Save Rates</button>
+                </div>
+            </section>
+
+            <!-- HISTORY PAGE -->
+            <section id="history" class="page">
+                <h2 class="page-title">Work History</h2>
+                <div class="history-actions">
+                    <button class="btn btn-danger" onclick="deleteSelectedHistory()">Delete Selected</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- History items will be loaded here -->
+                </div>
+                <div class="empty-state" id="emptyHistory" style="display: none;">
+                    <p>No history records found.</p>
+                </div>
+            </section>
+
+            <!-- UDHAAR PAGE -->
+            <section id="udhaar" class="page">
+                <h2 class="page-title">Udhaar (Khata Book)</h2>
+                
+                <!-- Add Udhaar Form -->
+                <div class="udhaar-form">
+                    <div class="form-group">
+                        <label for="udhaarName">Name</label>
+                        <input type="text" id="udhaarName" placeholder="Enter name">
+                    </div>
+                    <div class="form-group">
+                        <label for="udhaarMobile">Mobile Number</label>
+                        <input type="tel" id="udhaarMobile" placeholder="Enter mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="udhaarAmount">Amount (₹)</label>
+                        <input type="number" id="udhaarAmount" placeholder="Enter amount" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="udhaarDate">Date</label>
+                        <input type="date" id="udhaarDate">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveUdhaar()">Add Udhaar</button>
+                </div>
+
+                <!-- Udhaar List -->
+                <h3 class="section-subtitle">Udhaar Records</h3>
+                <div class="udhaar-list" id="udhaarList">
+                    <!-- Udhaar items will be loaded here -->
+                </div>
+                <div class="empty-state" id="emptyUdhaar" style="display: none;">
+                    <p>No udhaar records found.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Lock Overlay (shown when tool is running) -->
+        <div id="lockOverlay" class="lock-overlay" style="display: none;">
+            <div class="lock-message">
+                <p>Tool is running!</p>
+                <p>Please stop the tool to access other features.</p>
+                <button class="btn btn-primary" onclick="navigateTo('runningScreen')">Go to Running Screen</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
